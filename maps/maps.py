@@ -1,5 +1,5 @@
+from __future__ import annotations
 from typing import Union
-from functools import reduce
 
 
 class MapExercise:
@@ -14,14 +14,15 @@ class MapExercise:
         Ключи словаря: name, rating_kinopoisk, rating_imdb, genres, year, access_level, country
         :return: Средний рейтинг фильмов у которых две или больше стран
         """
-        def map(movie):
-            if ',' in movie['country'] and movie['rating_kinopoisk']:
-                return float(movie['rating_kinopoisk'])    
+
+        def get_rating(movie: dict) -> int:
+            if "," in movie["country"] and movie["rating_kinopoisk"]:
+                return float(movie["rating_kinopoisk"])
             return 0
 
-        ratings = [map(movie) for movie in list_of_movies]
+        ratings = [get_rating(movie) for movie in list_of_movies]
         ratings = [r for r in ratings if r > 0]
-        avg_rating = reduce(lambda res, x: res + x, ratings, 0) / len(ratings)
+        avg_rating = sum(ratings) / len(ratings)
         return avg_rating
 
     @staticmethod
@@ -37,11 +38,11 @@ class MapExercise:
         :return: Количество букв 'и' в названиях всех фильмов с рейтингом больше
         или равным заданному значению
         """
-        def map(movie):
-            if movie['rating_kinopoisk'] \
-            and float(movie['rating_kinopoisk']) >= rating:
-                count = [True for char in movie['name'] if char == 'и']
-                return len(count)
+
+        def chars_count_each(movie: dict) -> int:
+            if movie["rating_kinopoisk"] and float(movie["rating_kinopoisk"]) >= rating:
+                encounters = [True for char in movie["name"] if char == "и"]
+                return encounters.count(True)
             return 0
 
-        return sum([map(movie) for movie in list_of_movies])
+        return sum([chars_count_each(movie) for movie in list_of_movies])
