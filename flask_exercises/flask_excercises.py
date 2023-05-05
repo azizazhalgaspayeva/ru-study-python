@@ -89,5 +89,4 @@ class FlaskExercise:
 
         @app.route("/404")
         def not_found():
-            error = {"errors": {"name": "Not found."}}
-            return error, 404
+            return _not_found()
