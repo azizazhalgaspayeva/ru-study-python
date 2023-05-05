@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import Union
 
 
@@ -41,8 +40,7 @@ class MapExercise:
 
         def chars_count_each(movie: dict) -> int:
             if movie["rating_kinopoisk"] and float(movie["rating_kinopoisk"]) >= rating:
-                encounters = [True for char in movie["name"] if char == "и"]
-                return encounters.count(True)
+                return movie["name"].count("и")
             return 0
 
         return sum([chars_count_each(movie) for movie in list_of_movies])

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 
 
 class FlaskExercise:
@@ -28,4 +28,65 @@ class FlaskExercise:
 
     @staticmethod
     def configure_routes(app: Flask) -> None:
-        pass
+        users = {}
+
+        def create_dict_item(d, key, data):
+            d[key] = data
+
+        def change_dict_key(d, old_key, new_key):
+            d[new_key] = d.pop(old_key)
+
+        def delete_dict_item(d, key):
+            del d[key]
+            return key
+
+        def _not_found():
+            error = {"errors": {"name": "Not found."}}
+            return error, 404
+
+        @app.route("/user", methods=["POST"])
+        def create():
+            data = request.get_json()
+            try:
+                name = data.pop("name")
+            except KeyError:
+                name = None
+            error = None
+
+            if name is None:
+                error = {"errors": {"name": "This field is required"}}
+
+            if error is None:
+                create_dict_item(users, name, data)
+                message = {"data": "User {} is created!".format(name)}
+                return message, 201
+            else:
+                return error, 422
+            
+        @app.route("/user/<name>", methods=["GET"])
+        def retrieve(name):
+            if name in users.keys():
+                message = {"data": "My name is {}".format(name)}
+                return message, 200
+            return _not_found()
+        
+        @app.route("/user/<name>", methods=["PATCH"])
+        def update(name):
+            data = request.get_json()
+            new_name = data["name"]
+            if name in users.keys():
+                change_dict_key(users, name, new_name)
+                message = {"data": "My name is {}".format(new_name)}
+                return message, 200
+            return _not_found()
+
+        @app.route("/user/<name>", methods=["DELETE"])
+        def delete(name):
+            if name in users.keys():
+                user = delete_dict_item(users, name)
+                return user, 204
+            return _not_found()
+
+        @app.route("/404")
+        def not_found():
+            return _not_found()
