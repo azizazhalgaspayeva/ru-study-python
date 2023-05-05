@@ -31,21 +31,25 @@ class FlaskExercise:
         users = {}
 
         def create_dict_item(d, key, data):
-            users[key] = data
+            d[key] = data
 
         def change_dict_key(d, old_key, new_key):
             d[new_key] = d.pop(old_key)
 
         def delete_dict_item(d, key):
-            d.pop(key)
+            del d[key]
             return key
+
+        def _not_found():
+            error = {"errors": {"name": "Not found."}}
+            return error, 404
 
         @app.route("/user", methods=["POST"])
         def create():
             data = request.get_json()
             try:
                 name = data.pop("name")
-            except:
+            except KeyError:
                 name = None
             error = None
 
@@ -58,35 +62,30 @@ class FlaskExercise:
                 return message, 201
             else:
                 return error, 422
+            
+        @app.route("/user/<name>", methods=["GET"])
+        def retrieve(name):
+            if name in users.keys():
+                message = {"data": "My name is {}".format(name)}
+                return message, 200
+            return _not_found()
+        
+        @app.route("/user/<name>", methods=["PATCH"])
+        def update(name):
+            data = request.get_json()
+            new_name = data["name"]
+            if name in users.keys():
+                change_dict_key(users, name, new_name)
+                message = {"data": "My name is {}".format(new_name)}
+                return message, 200
+            return _not_found()
 
-        @app.route("/user/<name>", methods=["GET", "PATCH", "DELETE"])
-        def user(name):
-            if request.method == "GET":
-                if name in users.keys():
-                    message = {"data": "My name is {}".format(name)}
-                    return message, 200
-
-                error = {"errors": {"name": "Not found."}}
-                return error, 404
-
-            elif request.method == "PATCH":
-                data = request.get_json()
-                new_name = data["name"]
-                if name in users.keys():
-                    change_dict_key(users, name, new_name)
-                    message = {"data": "My name is {}".format(new_name)}
-                    return message, 200
-
-                error = {"errors": {"name": "Not found."}}
-                return error, 404
-
-            elif request.method == "DELETE":
-                if name in users.keys():
-                    user = delete_dict_item(users, name)
-                    return user, 204
-
-                error = {"errors": {"name": "Not found."}}
-                return error, 404
+        @app.route("/user/<name>", methods=["DELETE"])
+        def delete(name):
+            if name in users.keys():
+                user = delete_dict_item(users, name)
+                return user, 204
+            return _not_found()
 
         @app.route("/404")
         def not_found():
